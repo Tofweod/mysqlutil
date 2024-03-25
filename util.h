@@ -1,11 +1,6 @@
 #ifndef MY_MYSQL_UTIL
 #define MY_MYSQL_UTIL
 
-#define DEBUG_LOG
-#define LOG_INFO (1 << 0)
-#define LOG_WARN (1 << 1)
-#define LOG_ERROR (1 << 2)
-
 #include <mysql/field_types.h>
 #include <mysql/mysql.h>
 
@@ -70,14 +65,28 @@ int set_res_param(enum enum_field_types type, void *data, unsigned long length,
 // get 0 when is t_v_pair
 #define CHECK_TV_PAIR(pair) (!!((pair)->magic ^ t_v_pair_magic_number))
 
-#ifdef DEBUG_LOG
-#define ERROR_LOG(fmt, ...) fprintf(stderr, fmt, ##__VA_ARGS__)
-#else
-#define ERROR_LOG(fmt, ...) (stderr, fmt, ##__VA_ARGS__)
-#endif // DEBUG_LOG
+// log
+#define LOG_LEVEL
+#define LOG_INFO (1 << 0)
+#define LOG_WARN (1 << 1)
+#define LOG_ERROR (1 << 2)
+
+#define INFO_STR(str) "\033[0;36m" str "\033[0m"
+#define WARN_STR(str) "\033[0;33m" str "\033[0m"
+#define ERROR_STR(str) "\033[0;31m" str "\033[0m"
+
+#define PRINT(file, prefix, fmt, ...) fprintf(file, prefix fmt, ##__VA_ARGS__)
+#define INFO_PRINT(fmt, ...)                                                    \
+    PRINT(stdout, INFO_STR("[ INFO ]: "), fmt, ##__VA_ARGS__)
+
+#define WARN_PRINT(fmt, ...)                                                     \
+    PRINT(stderr, WARN_STR("[ WARN ]: "), fmt, ##__VA_ARGS__)
+#define ERROR_PRINT(fmt, ...)                                                    \
+    PRINT(stderr, ERROR_STR("[ ERROR ]: "), fmt, ##__VA_ARGS__)
 
 typedef struct mysql_struct_frame {
     MYSQL_STMT *stmt;
+    // item to iterator in mysql_stmt_fetch
     void *data;
     MYSQL_BIND *params;
 } mysql_struct_frame;
@@ -111,9 +120,11 @@ typedef struct mysql_struct_frame {
  * NOTE: undefined behavior for multi register in a stmt
  */
 mysql_struct_frame *
-stmt_struct_register(MYSQL_STMT *stmt, void *ptr, size_t param_size,
-                     void (*handler)(void *ptr, MYSQL_BIND *params));
+_stmt_struct_register(MYSQL_STMT *stmt, size_t ptr_size, size_t param_size,
+                      void (*handler)(void *ptr, MYSQL_BIND *params));
 
+#define stmt_struct_register(stmt, type, p_argc, handler)                      \
+    _stmt_struct_register((stmt), sizeof(type), (p_argc), (handler))
 /**
  * close stmt_binded_result,release resources in frame
  */

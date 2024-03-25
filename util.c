@@ -5,13 +5,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-
 static void stmt_error_handler(const char *err_msg, MYSQL_STMT *stmt,
                                MYSQL_BIND *params);
 
 Connection_Info *set_host(Connection_Info *conn_info, const char *host) {
     if (!host) {
-        ERROR_LOG("set host to NULL");
+        ERROR_PRINT("set host to NULL");
         return conn_info;
     }
     size_t len = strlen(host);
@@ -23,7 +22,7 @@ Connection_Info *set_host(Connection_Info *conn_info, const char *host) {
 
 Connection_Info *set_user(Connection_Info *conn_info, const char *user) {
     if (!user) {
-        ERROR_LOG("set host to NULL");
+        ERROR_PRINT("set host to NULL");
         return conn_info;
     }
     size_t len = strlen(user);
@@ -35,7 +34,7 @@ Connection_Info *set_user(Connection_Info *conn_info, const char *user) {
 
 Connection_Info *set_passwd(Connection_Info *conn_info, const char *passwd) {
     if (!passwd) {
-        ERROR_LOG("set host to NULL");
+        ERROR_PRINT("set host to NULL");
         return conn_info;
     }
     size_t len = strlen(passwd);
@@ -47,7 +46,7 @@ Connection_Info *set_passwd(Connection_Info *conn_info, const char *passwd) {
 
 Connection_Info *set_db(Connection_Info *conn_info, const char *db) {
     if (!db) {
-        ERROR_LOG("set host to NULL");
+        ERROR_PRINT("set host to NULL");
         return conn_info;
     }
     size_t len = strlen(db);
@@ -89,7 +88,7 @@ MYSQL *connect_by_info(MYSQL *conn, const Connection_Info *conn_info) {
 
 void stmt_error_handler(const char *err_msg, MYSQL_STMT *stmt,
                         MYSQL_BIND *params) {
-    ERROR_LOG("%s\n", err_msg);
+    ERROR_PRINT("%s\n", err_msg);
     mysql_stmt_close(stmt);
     free(params);
     stmt = NULL;
@@ -108,7 +107,7 @@ MYSQL_STMT *set_stmt(MYSQL_STMT *stmt, size_t argc, ...) {
             stmt_error_handler("input wrong arg pair", stmt, params);
             goto STMT_ERROR;
         }
-        if (set_param(tv->type, tv->value,tv->length, &params[i]) != 0) {
+        if (set_param(tv->type, tv->value, tv->length, &params[i]) != 0) {
             printf("type is %d\n", tv->type);
             stmt_error_handler("unknown mysql type", stmt, params);
             goto STMT_ERROR;
@@ -124,7 +123,8 @@ STMT_ERROR:
     return stmt;
 }
 
-int set_param(enum enum_field_types type, const void *data,unsigned long length, MYSQL_BIND *param) {
+int set_param(enum enum_field_types type, const void *data,
+              unsigned long length, MYSQL_BIND *param) {
     param->buffer_type = type;
     param->buffer = (void *)data;
     // TODO: complete all type handler
@@ -289,20 +289,17 @@ int set_res_param(enum enum_field_types type, void *data, unsigned long length,
 }
 
 mysql_struct_frame *
-stmt_struct_register(MYSQL_STMT *stmt, void *ptr, size_t param_size,
-               void (*handler)(void *ptr, MYSQL_BIND *params)) {
-    if(!ptr) {
-        ERROR_LOG("struct store in NULL\n");
-        return NULL;
-    }
-    if(!handler) {
-        ERROR_LOG("no handler set\n");
+_stmt_struct_register(MYSQL_STMT *stmt, size_t ptr_size, size_t param_size,
+                      void (*handler)(void *ptr, MYSQL_BIND *params)) {
+    if (!handler) {
+        ERROR_PRINT("no handler set\n");
         return NULL;
     }
     mysql_struct_frame *frame = malloc(sizeof(mysql_struct_frame));
+    frame->data = malloc(ptr_size);
     frame->params = calloc(sizeof(MYSQL_BIND), param_size);
     frame->stmt = stmt;
-    handler(ptr, frame->params);
+    handler(frame->data, frame->params);
     mysql_stmt_bind_result(stmt, frame->params);
     return frame;
 }
@@ -313,16 +310,3 @@ void stmt_struct_unregister(mysql_struct_frame *frame) {
     free(frame->params);
     free(frame);
 }
-
-// void *get_res_struct(void *ptr, void (*handler)(void *)) {
-//     if(!ptr) {
-//         ERROR_LOG("ptr is null\n");
-//         return NULL;
-//     }
-//     if(!handler) {
-//         ERROR_LOG("no handler found\n");
-//         return NULL;
-//     }
-//     handler(ptr);
-//     return ptr;
-// }
