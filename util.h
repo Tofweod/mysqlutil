@@ -76,12 +76,12 @@ int set_res_param(enum enum_field_types type, void *data, unsigned long length,
 #define ERROR_STR(str) "\033[0;31m" str "\033[0m"
 
 #define PRINT(file, prefix, fmt, ...) fprintf(file, prefix fmt, ##__VA_ARGS__)
-#define INFO_PRINT(fmt, ...)                                                    \
+#define INFO_PRINT(fmt, ...)                                                   \
     PRINT(stdout, INFO_STR("[ INFO ]: "), fmt, ##__VA_ARGS__)
 
-#define WARN_PRINT(fmt, ...)                                                     \
+#define WARN_PRINT(fmt, ...)                                                   \
     PRINT(stderr, WARN_STR("[ WARN ]: "), fmt, ##__VA_ARGS__)
-#define ERROR_PRINT(fmt, ...)                                                    \
+#define ERROR_PRINT(fmt, ...)                                                  \
     PRINT(stderr, ERROR_STR("[ ERROR ]: "), fmt, ##__VA_ARGS__)
 
 typedef struct mysql_struct_frame {
@@ -129,5 +129,7 @@ _stmt_struct_register(MYSQL_STMT *stmt, size_t ptr_size, size_t param_size,
  * close stmt_binded_result,release resources in frame
  */
 void stmt_struct_unregister(mysql_struct_frame *frame);
+
+#define CHECK_PTR_OF(type, p) (1 ? p : (type)0)
 
 #endif
