@@ -4,6 +4,7 @@ set_toolset("ld", "gcc")
 
 target("mysqlutil")
 do
+	add_defines('LUA_PATH="$(projectdir)/"')
 	set_targetdir("$(projectdir)/so")
 	set_kind("shared")
 	add_files("*.c")

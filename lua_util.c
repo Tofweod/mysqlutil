@@ -12,7 +12,7 @@ int load_config(Connection_Info *c, const char *cfg_path) {
     lua_pushstring(l, cfg_path);
     lua_setglobal(l, "config-path");
 
-    if (luaL_dofile(l, "/home/tofweod/Desktop/code/mysql/lib/load.lua") !=
+    if (luaL_dofile(l, PATH_OF_LUA("load.lua")) !=
         LUA_OK) {
         ERROR_PRINT("Error: %s\n", lua_tostring(l, -1));
         return 1;
