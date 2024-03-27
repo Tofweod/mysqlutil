@@ -8,14 +8,7 @@
 
 /**
  * load config file into Connection_Info
- * example config file below:
-  return { -- return is unignorable
-        host = "0.0.0.0",
-        user = "root",
-        passwd = "xxxx",
-        db = "xxxx",
-        port = 80,
-  }
+ * example config file is in test folder
 */
 int load_config(Connection_Info *c, const char *cfg_path);
 
