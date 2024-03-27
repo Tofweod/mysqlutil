@@ -10,7 +10,7 @@ static void stmt_error_handler(const char *err_msg, MYSQL_STMT *stmt,
 
 Connection_Info *set_host(Connection_Info *conn_info, const char *host) {
     if (!host) {
-        ERROR_PRINT("set host to NULL");
+        ERROR_PRINT("set host to NULL\n");
         return conn_info;
     }
     size_t len = strlen(host);
@@ -22,7 +22,7 @@ Connection_Info *set_host(Connection_Info *conn_info, const char *host) {
 
 Connection_Info *set_user(Connection_Info *conn_info, const char *user) {
     if (!user) {
-        ERROR_PRINT("set host to NULL");
+        ERROR_PRINT("set host to NULL\n");
         return conn_info;
     }
     size_t len = strlen(user);
@@ -34,7 +34,7 @@ Connection_Info *set_user(Connection_Info *conn_info, const char *user) {
 
 Connection_Info *set_passwd(Connection_Info *conn_info, const char *passwd) {
     if (!passwd) {
-        ERROR_PRINT("set host to NULL");
+        ERROR_PRINT("set host to NULL\n");
         return conn_info;
     }
     size_t len = strlen(passwd);
@@ -46,7 +46,7 @@ Connection_Info *set_passwd(Connection_Info *conn_info, const char *passwd) {
 
 Connection_Info *set_db(Connection_Info *conn_info, const char *db) {
     if (!db) {
-        ERROR_PRINT("set host to NULL");
+        ERROR_PRINT("set host to NULL\n");
         return conn_info;
     }
     size_t len = strlen(db);
