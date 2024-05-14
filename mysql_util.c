@@ -1,4 +1,5 @@
-#include "include/util.h"
+#include "include/mysql_util.h"
+#include "include/log.h"
 #include <mysql/field_types.h>
 #include <mysql/mysql.h>
 #include <stdio.h>
@@ -10,7 +11,7 @@ static void stmt_error_handler(const char *err_msg, MYSQL_STMT *stmt,
 
 Connection_Info *set_host(Connection_Info *conn_info, const char *host) {
     if (!host) {
-        ERROR_PRINT("set host to NULL\n");
+        ERROR_PRINT(stderr, "set host to NULL\n");
         return conn_info;
     }
     size_t len = strlen(host);
@@ -22,7 +23,7 @@ Connection_Info *set_host(Connection_Info *conn_info, const char *host) {
 
 Connection_Info *set_user(Connection_Info *conn_info, const char *user) {
     if (!user) {
-        ERROR_PRINT("set host to NULL\n");
+        ERROR_PRINT(stderr, "set host to NULL\n");
         return conn_info;
     }
     size_t len = strlen(user);
@@ -34,7 +35,7 @@ Connection_Info *set_user(Connection_Info *conn_info, const char *user) {
 
 Connection_Info *set_passwd(Connection_Info *conn_info, const char *passwd) {
     if (!passwd) {
-        ERROR_PRINT("set host to NULL\n");
+        ERROR_PRINT(stderr, "set host to NULL\n");
         return conn_info;
     }
     size_t len = strlen(passwd);
@@ -46,7 +47,7 @@ Connection_Info *set_passwd(Connection_Info *conn_info, const char *passwd) {
 
 Connection_Info *set_db(Connection_Info *conn_info, const char *db) {
     if (!db) {
-        ERROR_PRINT("set host to NULL\n");
+        ERROR_PRINT(stderr, "set host to NULL\n");
         return conn_info;
     }
     size_t len = strlen(db);
@@ -88,7 +89,7 @@ MYSQL *connect_by_info(MYSQL *conn, const Connection_Info *conn_info) {
 
 void stmt_error_handler(const char *err_msg, MYSQL_STMT *stmt,
                         MYSQL_BIND *params) {
-    ERROR_PRINT("%s\n", err_msg);
+    ERROR_PRINT(stderr, "%s\n", err_msg);
     mysql_stmt_close(stmt);
     free(params);
     stmt = NULL;
@@ -290,9 +291,9 @@ int set_res_param(enum enum_field_types type, void *data, unsigned long length,
 
 mysql_struct_frame *
 _stmt_struct_register(MYSQL_STMT *stmt, size_t ptr_size, size_t param_size,
-                      void (*handler)(void *ptr, MYSQL_BIND *params)) {
+                      struct_handler handler) {
     if (!handler) {
-        ERROR_PRINT("no handler set\n");
+        ERROR_PRINT(stderr, "no handler set\n");
         return NULL;
     }
     mysql_struct_frame *frame = malloc(sizeof(mysql_struct_frame));

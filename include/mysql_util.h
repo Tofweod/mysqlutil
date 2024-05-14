@@ -1,9 +1,8 @@
-#ifndef MY_MYSQL_UTIL
-#define MY_MYSQL_UTIL
+#ifndef TOF_MYSQL_UTIL
+#define TOF_MYSQL_UTIL
 
 #include <mysql/field_types.h>
 #include <mysql/mysql.h>
-#include "log.h"
 
 typedef struct Connection_Info {
     const char *host;
@@ -15,17 +14,19 @@ typedef struct Connection_Info {
     unsigned long clientflag;
 } Connection_Info;
 
-Connection_Info *set_host(Connection_Info *conn_info, const char *host);
-Connection_Info *set_user(Connection_Info *conn_info, const char *user);
-Connection_Info *set_passwd(Connection_Info *conn_info, const char *passwd);
-Connection_Info *set_db(Connection_Info *conn_info, const char *db);
-Connection_Info *set_port(Connection_Info *conn_info, const unsigned int port);
-Connection_Info *set_unix_socket(Connection_Info *conn_info,
-                                 const char *unix_socket);
-Connection_Info *set_clientflag(Connection_Info *conn_info,
-                                const unsigned long clientflag);
+extern Connection_Info *set_host(Connection_Info *conn_info, const char *host);
+extern Connection_Info *set_user(Connection_Info *conn_info, const char *user);
+extern Connection_Info *set_passwd(Connection_Info *conn_info,
+                                   const char *passwd);
+extern Connection_Info *set_db(Connection_Info *conn_info, const char *db);
+extern Connection_Info *set_port(Connection_Info *conn_info,
+                                 const unsigned int port);
+extern Connection_Info *set_unix_socket(Connection_Info *conn_info,
+                                        const char *unix_socket);
+extern Connection_Info *set_clientflag(Connection_Info *conn_info,
+                                       const unsigned long clientflag);
 
-MYSQL *connect_by_info(MYSQL *conn, const Connection_Info *conn_info);
+extern MYSQL *connect_by_info(MYSQL *conn, const Connection_Info *conn_info);
 
 typedef struct t_v_pair {
 #define t_v_pair_magic_number 0x3547fb
@@ -40,7 +41,7 @@ typedef struct t_v_pair {
  * executing stmt
  * use t_v_pair for set_param,use MAKE_ARG to build t_v_pair
  */
-MYSQL_STMT *set_stmt(MYSQL_STMT *stmt, size_t argc, ...);
+extern MYSQL_STMT *set_stmt(MYSQL_STMT *stmt, size_t argc, ...);
 
 /**
  * param->buffer just points to value,thus need to ensure value dont change
@@ -48,19 +49,19 @@ MYSQL_STMT *set_stmt(MYSQL_STMT *stmt, size_t argc, ...);
  * parameter length is especially for MYSQL_TYPE_BLOB to get the blob data's
  * length,otherwise just set this to 0
  */
-int set_param(enum enum_field_types type, const void *value,
-              unsigned long length, MYSQL_BIND *param);
+extern int set_param(enum enum_field_types type, const void *value,
+                     unsigned long length, MYSQL_BIND *param);
 
 /**
  * param->buffer just points to value,thus need to ensure value dont change
  * before getting the result
  */
-int set_res_param(enum enum_field_types type, void *data, unsigned long length,
-                  MYSQL_BIND *param);
+extern int set_res_param(enum enum_field_types type, void *data,
+                         unsigned long length, MYSQL_BIND *param);
 
 #define MAKE_ARG(t, v, ...)                                                    \
     (t_v_pair *)&(t_v_pair) {                                                  \
-        t_v_pair_magic_number, (t), (v), __VA_ARGS__                           \
+        t_v_pair_magic_number, (t), (v), 0##__VA_ARGS__                           \
     } // ... for length field
 
 // get 0 when is t_v_pair
@@ -75,6 +76,8 @@ typedef struct mysql_struct_frame {
     void *data;
     MYSQL_BIND *params;
 } mysql_struct_frame;
+
+typedef void (*struct_handler)(void *ptr,MYSQL_BIND* binds);
 
 /**
  * use handler to set_param and register result into ptr
@@ -104,17 +107,29 @@ typedef struct mysql_struct_frame {
  * after register the result of a row is store in ptr
  * NOTE: undefined behavior for multi register in a stmt
  */
-mysql_struct_frame *
+extern mysql_struct_frame *
 _stmt_struct_register(MYSQL_STMT *stmt, size_t ptr_size, size_t param_size,
-                      void (*handler)(void *ptr, MYSQL_BIND *params));
+                      struct_handler handler);
 
 #define stmt_struct_register(stmt, type, p_argc, handler)                      \
     _stmt_struct_register((stmt), sizeof(type), (p_argc), (handler))
 /**
  * close stmt_binded_result,release resources in frame
  */
-void stmt_struct_unregister(mysql_struct_frame *frame);
+extern void stmt_struct_unregister(mysql_struct_frame *frame);
 
 #define CHECK_PTR_OF(type, p) (1 ? p : (type)0)
+
+/**
+* other modules
+*/
+
+#ifdef TOF_UTIL_USE_LUA
+#include "lua_util.h"
+#endif // TOF_UTIL_USE_LUA
+
+#ifdef TOF_UTIL_SCHEMA
+#include "util_schema.h"
+#endif
 
 #endif

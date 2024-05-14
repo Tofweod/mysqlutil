@@ -8,11 +8,14 @@ do
 	set_kind("shared")
 	add_files("*.c")
 
+	add_includedirs("include")
+	add_cxflags("-x c")
+
 	add_syslinks("mysqlclient")
 	add_syslinks("lua")
 
-	includes("test")
 	after_build(function(target)
 		os.cp("lua/", target:targetdir())
+		os.cp("include/mysql_util.h", target:targetdir())
 	end)
 end
