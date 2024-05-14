@@ -106,38 +106,38 @@ static void json_printf_num(FILE *file, yyjson_val *val) {
 }
 
 #define TAB_SIZE 4
-#define PRINT_TAB(indent) printf("%*s", indent, "");
+#define FPRINT_TAB(file, indent) fprintf(file, "%*s", indent, "");
 static void json_printf_obj(FILE *file, yyjson_val *json_obj, int *indent,
                             bool is_root) {
     static char *bool_val[] = {"false", "true"};
     size_t idx, max;
     yyjson_val *key, *val;
     if (is_root)
-        PRINT_TAB(*indent);
-    printf("{\n");
+        FPRINT_TAB(file, *indent);
+    fprintf(file, "{\n");
     *indent += TAB_SIZE;
     yyjson_obj_foreach(json_obj, idx, max, key, val) {
-        PRINT_TAB(*indent);
+        FPRINT_TAB(file, *indent);
         yyjson_type type = yyjson_get_type(val);
         switch (type) {
         case YYJSON_TYPE_NUM:
-            fprintf(file, "\"%s\":", yyjson_get_str(key));
+            fprintf(file, "\"%s\": ", yyjson_get_str(key));
             json_printf_num(file, val);
             break;
         case YYJSON_TYPE_STR:
-            fprintf(file, "\"%s\":\"%s\"", yyjson_get_str(key),
+            fprintf(file, "\"%s\": \"%s\"", yyjson_get_str(key),
                     yyjson_get_str(val));
             break;
         case YYJSON_TYPE_BOOL:
-            fprintf(file, "\"%s\":%s", yyjson_get_str(key),
+            fprintf(file, "\"%s\": %s", yyjson_get_str(key),
                     bool_val[yyjson_get_bool(val)]);
             break;
         case YYJSON_TYPE_OBJ:
-            fprintf(file, "\"%s\":", yyjson_get_str(key));
+            fprintf(file, "\"%s\": ", yyjson_get_str(key));
             json_printf_obj(file, val, indent, false);
             break;
         case YYJSON_TYPE_ARR:
-            fprintf(file, "\"%s\":", yyjson_get_str(key));
+            fprintf(file, "\"%s\": ", yyjson_get_str(key));
             json_printf_arr(file, val, indent, false);
             break;
         }
@@ -146,8 +146,8 @@ static void json_printf_obj(FILE *file, yyjson_val *json_obj, int *indent,
         fprintf(file, "\n");
     }
     *indent -= TAB_SIZE;
-    PRINT_TAB(*indent);
-    printf("}");
+    FPRINT_TAB(file, *indent);
+    fprintf(file, "}");
 }
 
 static void json_printf_arr(FILE *file, yyjson_val *json_arr, int *indent,
@@ -156,11 +156,11 @@ static void json_printf_arr(FILE *file, yyjson_val *json_arr, int *indent,
     size_t idx, max;
     yyjson_val *val;
     if (is_root)
-        PRINT_TAB(*indent);
-    printf("[\n");
+        FPRINT_TAB(file, *indent);
+    fprintf(file, "[\n");
     *indent += TAB_SIZE;
     yyjson_arr_foreach(json_arr, idx, max, val) {
-        PRINT_TAB(*indent);
+        FPRINT_TAB(file, *indent);
         yyjson_type type = yyjson_get_type(val);
         switch (type) {
         case YYJSON_TYPE_NUM:
@@ -184,8 +184,8 @@ static void json_printf_arr(FILE *file, yyjson_val *json_arr, int *indent,
         fprintf(file, "\n");
     }
     *indent -= TAB_SIZE;
-    PRINT_TAB(*indent);
-    printf("]");
+    FPRINT_TAB(file, *indent);
+    fprintf(file, "]");
 }
 
 void json_printf(FILE *file, yyjson_doc *doc) {
