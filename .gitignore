@@ -1,4 +1,4 @@
 /build
 /.xmake
-/test
+/test/*/
 /so
