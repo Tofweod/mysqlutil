@@ -78,7 +78,6 @@ void json_add_arr_obj(yyjson_mut_doc *doc, yyjson_mut_val *root,
         json_arr = yyjson_mut_arr_with_bool(doc, arr, arr_len);
         break;
     case YYJSON_TYPE_ARR:
-        break;
     case YYJSON_TYPE_OBJ:
         json_arr = yyjson_mut_arr(doc);
         for (size_t i = 0; i < arr_len; i++) {

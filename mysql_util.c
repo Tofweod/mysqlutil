@@ -1,3 +1,5 @@
+#define TOF_LOG_LEVEL
+
 #include "include/mysql_util.h"
 #include "include/log.h"
 #include <mysql/field_types.h>
@@ -5,6 +7,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+int LOG_LEVEL = LOG_INFO;
 
 static void stmt_error_handler(const char *err_msg, MYSQL_STMT *stmt,
                                MYSQL_BIND *params);
